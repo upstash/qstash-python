@@ -39,3 +39,49 @@ async def test_publish_to_url_async(client):
     assert (
         event["state"] != "ERROR"
     ), f"Event with messageId {res['messageId']} was not delivered"
+
+
+@pytest.mark.asyncio
+async def test_batch_async(client):
+    N = 3
+    messages = []
+    for i in range(N):
+        messages.append(
+            {
+                "body": f"hi {i}",
+                "url": "https://example.com",
+                "retries": 0,
+                "headers": {
+                    f"test-header-{i}": f"test-value-{i}",
+                    "content-type": "text/plain",
+                },
+            }
+        )
+
+    res = await client.batch(messages)
+    assert len(res) == N
+    for i in range(N):
+        assert res[i]["messageId"] is not None
+
+
+@pytest.mark.asyncio
+async def test_batch_json_async(client):
+    N = 3
+    messages = []
+    for i in range(N):
+        messages.append(
+            {
+                "body": {"hi": i},
+                "url": "https://example.com",
+                "retries": 0,
+                "headers": {
+                    f"test-header-{i}": f"test-value-{i}",
+                    "content-type": "application/json",
+                },
+            }
+        )
+
+    res = await client.batch_json(messages)
+    assert len(res) == N
+    for i in range(N):
+        assert res[i]["messageId"] is not None

@@ -1,7 +1,7 @@
 from typing import Optional, Union
 from upstash_qstash.upstash_http import HttpClient
 from upstash_qstash.qstash_types import RetryConfig
-from upstash_qstash.publish import Publish, PublishRequest
+from upstash_qstash.publish import Publish, PublishRequest, BatchRequest
 from upstash_qstash.messages import Messages
 from upstash_qstash.topics import Topics
 from upstash_qstash.dlq import DLQ
@@ -53,6 +53,22 @@ class Client:
         :return: An instance of PublishResponse containing the response details.
         """
         return Publish.publish_json(self.http, req)
+
+    def batch(self, req: BatchRequest):
+        """
+        Publishes a batch of messages to QStash.
+        :param req: An instance of BatchRequest containing the request details.
+        :return: A list of responses containing the message_id, url (if publishing to a topic),
+        """
+        return Publish.batch(self.http, req)
+
+    def batch_json(self, req: BatchRequest):
+        """
+        Publishes a batch of messages to QStash, automatically serializing the body of each message into JSON.
+        :param req: An instance of BatchRequest containing the request details.
+        :return: A list of responses containing the message_id, url (if publishing to a topic),
+        """
+        return Publish.batch_json(self.http, req)
 
     def messages(self):
         """

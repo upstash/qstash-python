@@ -49,3 +49,47 @@ def test_disallow_url_and_topic(client):
                 "topic": "test-topic",
             }
         )
+
+
+def test_batch(client):
+    N = 3
+    messages = []
+    for i in range(N):
+        messages.append(
+            {
+                "body": f"hi {i}",
+                "url": "https://example.com",
+                "retries": 0,
+                "headers": {
+                    f"test-header-{i}": f"test-value-{i}",
+                    "content-type": "text/plain",
+                },
+            }
+        )
+
+    res = client.batch(messages)
+    assert len(res) == N
+    for i in range(N):
+        assert res[i]["messageId"] is not None
+
+
+def test_batch_json(client):
+    N = 3
+    messages = []
+    for i in range(N):
+        messages.append(
+            {
+                "body": {"hi": i},
+                "url": "https://example.com",
+                "retries": 0,
+                "headers": {
+                    f"test-header-{i}": f"test-value-{i}",
+                    "content-type": "application/json",
+                },
+            }
+        )
+
+    res = client.batch_json(messages)
+    assert len(res) == N
+    for i in range(N):
+        assert res[i]["messageId"] is not None

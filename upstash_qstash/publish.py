@@ -36,6 +36,8 @@ PublishToTopicSingleResponse = TypedDict(
 
 PublishToTopicResponse = List[PublishToTopicSingleResponse]
 
+BatchRequest = List[PublishRequest]
+
 
 class Publish:
     @staticmethod
@@ -113,3 +115,52 @@ class Publish:
         req.setdefault("headers", {}).update({"Content-Type": "application/json"})
 
         return Publish.publish(http, req)
+
+    @staticmethod
+    def batch(
+        http: HttpClient, req: BatchRequest
+    ) -> List[Union[PublishToUrlResponse, PublishToTopicResponse]]:
+        """
+        Publish a batch of messages to QStash.
+        """
+        for message in req:
+            Publish._validate_request(message)
+            message["headers"] = Publish._prepare_headers(message)
+
+        messages = []
+        for message in req:
+            messages.append(
+                {
+                    "destination": message.get("url") or message["topic"],
+                    "headers": message["headers"],
+                    "body": message.get("body"),
+                }
+            )
+
+        return http.request(
+            {
+                "path": ["v2", "batch"],
+                "body": json.dumps(messages),
+                "headers": {
+                    "Content-Type": "application/json",
+                },
+                "method": "POST",
+            }
+        )
+
+    @staticmethod
+    def batch_json(
+        http: HttpClient, req: BatchRequest
+    ) -> List[Union[PublishToUrlResponse, PublishToTopicResponse]]:
+        """
+        Publish a batch of messages to QStash, automatically serializing each body as JSON.
+        """
+        for message in req:
+            if "body" in message:
+                message["body"] = json.dumps(message["body"])
+
+            message.setdefault("headers", {}).update(
+                {"Content-Type": "application/json"}
+            )
+
+        return Publish.batch(http, req)

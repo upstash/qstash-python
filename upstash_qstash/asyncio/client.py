@@ -1,7 +1,7 @@
 from typing import Optional, Union
 from upstash_qstash.upstash_http import HttpClient
 from upstash_qstash.qstash_types import RetryConfig
-from upstash_qstash.asyncio.publish import Publish, PublishRequest
+from upstash_qstash.asyncio.publish import Publish, PublishRequest, BatchRequest
 from upstash_qstash.asyncio.messages import Messages
 from upstash_qstash.asyncio.topics import Topics
 from upstash_qstash.asyncio.dlq import DLQ
@@ -45,12 +45,28 @@ class Client:
 
     async def publish_json(self, req: PublishRequest):
         """
-        Publish a message to QStash, automatically serializing the body as JSON.
+        Asynchronously publish a message to QStash, automatically serializing the body as JSON.
 
         :param req: An instance of PublishRequest containing the request details.
         :return: An instance of PublishResponse containing the response details.
         """
         return await Publish.publish_json_async(self.http, req)
+
+    async def batch(self, req: BatchRequest):
+        """
+        Publishes a batch of messages to QStash.
+        :param req: An instance of BatchRequest containing the request details.
+        :return: A list of responses containing the message_id, url (if publishing to a topic),
+        """
+        return await Publish.batch_async(self.http, req)
+
+    async def batch_json(self, req: BatchRequest):
+        """
+        Asynchronously publishes a batch of messages to QStash, automatically serializing the body of each message into JSON.
+        :param req: An instance of BatchRequest containing the request details.
+        :return: A list of responses containing the message_id, url (if publishing to a topic),
+        """
+        return await Publish.batch_json_async(self.http, req)
 
     def messages(self):
         """
